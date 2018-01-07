@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  BookDetailVC.swift
 //  NYT Best Seller Books
 //
 //  Created by Lingeswaran Kandasamy on 1/6/18.
@@ -9,26 +9,41 @@
 import UIKit
 import CoreData
 
-class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
+class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
     
     lazy var fetchedhResultController: NSFetchedResultsController<NSFetchRequestResult> = {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: BookList.self))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "list_name", ascending: true)]
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Books.self))
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "rank", ascending: true)]
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: CoreDataStack.sharedInstance.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         frc.delegate = self
         return frc
     }()
     
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var bookCollectionView: UICollectionView!
+    @IBOutlet weak var bookSortSegment: UISegmentedControl!
+    
+    var bestSellerList: String!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.delegate = self
-        tableView.dataSource = self
+        bookCollectionView.delegate = self
+        bookCollectionView.dataSource = self
         view.backgroundColor = .white
+        print(bestSellerList)
+        let URL = "\(BASE_URL_FOR_DETAILS)\(bestSellerList!)\(URL_ENDPOINT)"
+        BestSellerListName.instance.URL = URL.replacingOccurrences(of: " ", with: "-")
+      //  BookService.instance.downloadBestSellerBooks()
+      //  self.Product
+         //self.initBooks()
+        
+        
         updateTableContent()
-        }
-    
+        
+    }
+
+
+
+
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
@@ -36,7 +51,7 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         } catch let error  {
             print("ERROR: \(error)")
         }
-        let service = BookApiService()
+        let service = BookService()
         service.getDataWith { (result) in
             switch result {
             case .Success(let data):
@@ -49,7 +64,8 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             }
         }
     }
-    
+
+
     func showAlertWith(title: String, message: String, style: UIAlertControllerStyle = .alert) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: style)
         let action = UIAlertAction(title: title, style: .default) { (action) in
@@ -59,40 +75,41 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         self.present(alertController, animated: true, completion: nil)
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        
         if let count = fetchedhResultController.sections?.first?.numberOfObjects {
             return count
         }
         return 0
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "BookListCell", for: indexPath) as! BookListCell
-        
-        if let bookList = fetchedhResultController.object(at: indexPath) as? BookList {
-            cell.setBookListCellWith(bookList: bookList)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BookCell", for: indexPath) as! BookCell
+        if let books = fetchedhResultController.object(at: indexPath) as? Books {
+             cell.setBooksCellWith(books: books)
         }
         return cell
     }
     
-    
-    private func createBookListEntityFrom(dictionary: [String: AnyObject]) -> NSManagedObject? {
+    private func createBookEntityFrom(dictionary: [String: AnyObject]) -> NSManagedObject? {
         let context = CoreDataStack.sharedInstance.persistentContainer.viewContext
-        if let bookListEntity = NSEntityDescription.insertNewObject(forEntityName: "BookList", into: context) as? BookList {
-            bookListEntity.list_name = dictionary["list_name"] as? String
-            bookListEntity.display_name = dictionary["display_name"] as? String
-            return bookListEntity
+        if let bookEntity = NSEntityDescription.insertNewObject(forEntityName: "Books", into: context) as? Books {
+            bookEntity.book_title = dictionary["title"] as? String
+            bookEntity.author = dictionary["author"] as? String
+            bookEntity.rank =   dictionary["rank"] as? String
+            bookEntity.week_on_list = dictionary["weeks_on_list"] as? String
+            bookEntity.anazon_link = dictionary["amazon_product_url"] as? String
+            bookEntity.review_link = dictionary["sunday_review_link"] as? String
+            bookEntity.book_description = dictionary["description"] as? String
+            bookEntity.image_url = dictionary["book_image"] as? String
+            return bookEntity
         }
         return nil
     }
     
     private func saveInCoreDataWith(array: [[String: AnyObject]]) {
-        _ = array.map{self.createBookListEntityFrom(dictionary: $0)}
+        _ = array.map{self.createBookEntityFrom(dictionary: $0)}
         do {
             try CoreDataStack.sharedInstance.persistentContainer.viewContext.save()
         } catch let error {
@@ -104,7 +121,7 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         do {
             
             let context = CoreDataStack.sharedInstance.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: BookList.self))
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Books.self))
             do {
                 let objects  = try context.fetch(fetchRequest) as? [NSManagedObject]
                 _ = objects.map{$0.map{context.delete($0)}}
@@ -114,55 +131,33 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             }
         }
     }
+
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if let category = fetchedhResultController.object(at: indexPath) as? BookList {
-            BestSellerListName.instance.bestSellerListName = category.list_name
-        }
-        
-        performSegue(withIdentifier: "toBookVC", sender: nil)
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "toBookVC" {
-            let destination = segue.destination as? BookDetailVC
-            destination?.bestSellerList = BestSellerListName.instance.bestSellerListName
-        }
+    @IBAction func bookSortSegmentChange(_ sender: Any) {
     }
 }
 
-extension BestSellerListVC: NSFetchedResultsControllerDelegate {
+extension BookDetailVC: NSFetchedResultsControllerDelegate {
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
         case .insert:
-            self.tableView.insertRows(at: [newIndexPath!], with: .automatic)
+            self.bookCollectionView.insertItems(at: [newIndexPath!])
         case .delete:
-            self.tableView.deleteRows(at: [indexPath!], with: .automatic)
+            self.bookCollectionView.insertItems(at: [indexPath!])
         default:
             break
         }
     }
     
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.tableView.endUpdates()
-    }
-    
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.beginUpdates()
-    }
+//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        self.bookCollectionView.endUpdates()
+//    }
+//    
+//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        bookCollectionView.beginUpdates()
+//    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
