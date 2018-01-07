@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <elements/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13772" systemVersion="17C88" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="BookList" representedClassName=".BookList" syncable="YES">
+        <attribute name="display_name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="list_name" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Books" representedClassName=".Books" syncable="YES">
+        <attribute name="anazon_link" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="author" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="book_description" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="book_title" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="rank" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="review_link" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="week_on_list" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+    </entity>
+    <entity name="LastSaleBy" representedClassName=".LastSaleBy" syncable="YES">
+        <attribute name="book_title" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sell_by" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="BookList" positionX="-63" positionY="-18" width="128" height="75"/>
+        <element name="Books" positionX="-54" positionY="-9" width="128" height="150"/>
+        <element name="LastSaleBy" positionX="-36" positionY="54" width="128" height="75"/>
+    </elements>
 </model>

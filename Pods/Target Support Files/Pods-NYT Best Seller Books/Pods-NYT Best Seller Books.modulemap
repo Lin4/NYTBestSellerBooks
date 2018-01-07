@@ -1,0 +1,6 @@
+framework module Pods_NYT_Best_Seller_Books {
+  umbrella header "Pods-NYT Best Seller Books-umbrella.h"
+
+  export *
+  module * { export * }
+}
