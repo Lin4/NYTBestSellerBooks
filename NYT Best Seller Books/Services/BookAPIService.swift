@@ -9,8 +9,7 @@
 import Foundation
 import UIKit
 class BookApiService: NSObject {
-    
-    let query = "Books"
+
     lazy var endPoint: String = {
         return BEST_SELLER_BOOK_LIST_URL
     }()
@@ -18,7 +17,6 @@ class BookApiService: NSObject {
         let urlString = endPoint
         guard let url = URL(string: urlString) else { return completion(.Error("Invalid URL, we can't update your feed")) }
         URLSession.shared.dataTask(with: url) { (data, response, error) in
-
             guard error == nil else { return completion(.Error(error!.localizedDescription)) }
             guard let data = data else { return completion(.Error(error?.localizedDescription ?? "There are no new Items to show"))
             }
@@ -29,13 +27,12 @@ class BookApiService: NSObject {
                     }
                     DispatchQueue.main.async {
                         completion(.Success(itemsJsonArray))
-                        print(itemsJsonArray)
                     }
                 }
             } catch let error {
                 return completion(.Error(error.localizedDescription))
             }
-            }.resume()
+        }.resume()
     }
 }
 

@@ -19,8 +19,8 @@ extension Books {
 
     @NSManaged public var book_title: String?
     @NSManaged public var author: String?
-    @NSManaged public var rank: String?
-    @NSManaged public var week_on_list: String?
+    @NSManaged public var rank: Int64
+    @NSManaged public var week_on_list: Int64
     @NSManaged public var anazon_link: String?
     @NSManaged public var review_link: String?
     @NSManaged public var book_description: String?

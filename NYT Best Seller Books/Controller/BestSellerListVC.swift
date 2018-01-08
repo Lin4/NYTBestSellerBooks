@@ -32,7 +32,7 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
-            print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
+         //   print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
         } catch let error  {
             print("ERROR: \(error)")
         }

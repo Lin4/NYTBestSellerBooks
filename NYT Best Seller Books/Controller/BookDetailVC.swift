@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     lazy var fetchedhResultController: NSFetchedResultsController<NSFetchRequestResult> = {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Books.self))
@@ -19,35 +19,28 @@ class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionView
         return frc
     }()
     
-    @IBOutlet weak var bookCollectionView: UICollectionView!
+    @IBOutlet weak var tableView: UITableView!
+  
     @IBOutlet weak var bookSortSegment: UISegmentedControl!
     
     var bestSellerList: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        bookCollectionView.delegate = self
-        bookCollectionView.dataSource = self
+        tableView.delegate = self
+        tableView.dataSource = self
         view.backgroundColor = .white
-        print(bestSellerList)
-        let URL = "\(BASE_URL_FOR_DETAILS)\(bestSellerList!)\(URL_ENDPOINT)"
-        BestSellerListName.instance.URL = URL.replacingOccurrences(of: " ", with: "-")
-      //  BookService.instance.downloadBestSellerBooks()
-      //  self.Product
-         //self.initBooks()
-        
-        
+    
+        view.backgroundColor = .white
         updateTableContent()
+            
+        }
         
-    }
-
-
-
-
+    
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
-            print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
+            //   print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
         } catch let error  {
             print("ERROR: \(error)")
         }
@@ -66,6 +59,7 @@ class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionView
     }
 
 
+
     func showAlertWith(title: String, message: String, style: UIAlertControllerStyle = .alert) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: style)
         let action = UIAlertAction(title: title, style: .default) { (action) in
@@ -75,21 +69,29 @@ class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionView
         self.present(alertController, animated: true, completion: nil)
     }
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if let count = fetchedhResultController.sections?.first?.numberOfObjects {
             return count
         }
         return 0
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BookCell", for: indexPath) as! BookCell
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "BookCell", for: indexPath) as! BookCells
+        
         if let books = fetchedhResultController.object(at: indexPath) as? Books {
-             cell.setBooksCellWith(books: books)
+            cell.setBooksCellWith(books: books)
         }
         return cell
+    }
+    
+     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return view.frame.width - 50 //100 = sum of labels height + height of divider line
     }
     
     private func createBookEntityFrom(dictionary: [String: AnyObject]) -> NSManagedObject? {
@@ -97,13 +99,15 @@ class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionView
         if let bookEntity = NSEntityDescription.insertNewObject(forEntityName: "Books", into: context) as? Books {
             bookEntity.book_title = dictionary["title"] as? String
             bookEntity.author = dictionary["author"] as? String
-            bookEntity.rank =   dictionary["rank"] as? String
-            bookEntity.week_on_list = dictionary["weeks_on_list"] as? String
+            bookEntity.rank =   ((dictionary["rank"]) as? Int64)!
+            bookEntity.week_on_list = ((dictionary["weeks_on_list"]) as? Int64)!
             bookEntity.anazon_link = dictionary["amazon_product_url"] as? String
             bookEntity.review_link = dictionary["sunday_review_link"] as? String
             bookEntity.book_description = dictionary["description"] as? String
             bookEntity.image_url = dictionary["book_image"] as? String
+             
             return bookEntity
+           
         }
         return nil
     }
@@ -131,7 +135,9 @@ class BookDetailVC: UIViewController, UICollectionViewDelegate, UICollectionView
             }
         }
     }
-
+    
+    
+   
     
     @IBAction func bookSortSegmentChange(_ sender: Any) {
     }
@@ -143,21 +149,22 @@ extension BookDetailVC: NSFetchedResultsControllerDelegate {
         
         switch type {
         case .insert:
-            self.bookCollectionView.insertItems(at: [newIndexPath!])
+            self.tableView.insertRows(at: [newIndexPath!], with: .automatic)
         case .delete:
-            self.bookCollectionView.insertItems(at: [indexPath!])
+            self.tableView.deleteRows(at: [indexPath!], with: .automatic)
         default:
             break
         }
     }
     
-//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-//        self.bookCollectionView.endUpdates()
-//    }
-//    
-//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-//        bookCollectionView.beginUpdates()
-//    }
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.endUpdates()
+    }
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        tableView.beginUpdates()
+    }
 }
+
 
 
