@@ -29,8 +29,10 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
+        let URL = "\(BASE_URL_FOR_BOOK_DETAILS)\(bestSellerList!)\(URL_ENDPOINT_BOOK_DETAILS)"
+        BestSellerListName.instance.URL = URL.replacingOccurrences(of: " ", with: "-")
+        
         view.backgroundColor = .white
-    
         view.backgroundColor = .white
         updateTableContent()
             
@@ -40,7 +42,7 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
-            //   print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
+               print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
         } catch let error  {
             print("ERROR: \(error)")
         }

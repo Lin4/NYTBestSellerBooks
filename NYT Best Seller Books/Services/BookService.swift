@@ -11,7 +11,7 @@ import UIKit
 class BookService: NSObject {
     
     lazy var endPoint: String = {
-        return "https://api.nytimes.com/svc/books/v3/lists/2016-12-11/animals.json?api-key=92c2940599c54dadb9bd2517a8d82226"
+        return BestSellerListName.instance.URL
     }()
     func getDataWith(completion: @escaping (result<[[String: AnyObject]]>) -> Void) {
         let urlString = endPoint
@@ -24,7 +24,7 @@ class BookService: NSObject {
             do {
                 let jsonResult = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers) as! NSDictionary
                 let jsonArray = jsonResult.value(forKey: "results") as? [String: AnyObject]
-                guard let booksArray = jsonArray!["books"] as? [[String: AnyObject]] else {
+                guard let booksArray = jsonArray?["books"] as? [[String: AnyObject]] else {
                     return completion(.Error(error?.localizedDescription ?? "There are no new Items to show"))
                 }
                 DispatchQueue.main.async {
