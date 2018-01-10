@@ -16,24 +16,8 @@ The current version is working with Xcode Version 9.2 and  I have been updating 
 
 I'm using Alamofire and SwiftyJSON  And the app can only support iOS10+. 
 
-Install pod 
------------
- pod 'Alamofire'
- pod 'SwiftyJSON'
-
-Copy and paste the above pods in your pod file,  save and install pods after installing pods select the pod targets and change the swift version to swift 3.2 
-
-
-
 Used features
 -------------
 Swift Programming Language
-Alamofire
-SwiftyJSON
 
-
-App clone URL
--------------
-Clone with HTTPS : https://github.com/Lin4/NYTimes-Bestseller.git
-Clone with SSH: git@github.com:Lin4/NYTimes-Bestseller.git
 
