@@ -1,5 +1,5 @@
 //
-//  Books+CoreDataClass.swift
+//  Images+CoreDataClass.swift
 //  NYT Best Seller Books
 //
 //  Created by Lingeswaran Kandasamy on 1/8/18.
@@ -11,6 +11,6 @@ import Foundation
 import CoreData
 
 
-public class Books: NSManagedObject {
+public class Images: NSManagedObject {
 
 }

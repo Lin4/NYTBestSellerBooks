@@ -18,22 +18,21 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         frc.delegate = self
         return frc
     }()
-    
+ 
     @IBOutlet weak var tableView: UITableView!
-  
-    @IBOutlet weak var bookSortSegment: UISegmentedControl!
+    @IBOutlet weak var spinner: UIActivityIndicatorView!
+    @IBOutlet weak var segment: UISegmentedControl!
     
+   
     var bestSellerList: String!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+    
         tableView.delegate = self
         tableView.dataSource = self
         let URL = "\(BASE_URL_FOR_BOOK_DETAILS)\(bestSellerList!)\(URL_ENDPOINT_BOOK_DETAILS)"
         BestSellerListName.instance.URL = URL.replacingOccurrences(of: " ", with: "-")
-        
-        view.backgroundColor = .white
-        view.backgroundColor = .white
+        spinner.startAnimating()
         updateTableContent()
             
         }
@@ -42,7 +41,7 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
-               print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
+            print("COUNT FETCHED FIRST: \(String(describing: self.fetchedhResultController.sections?[0].numberOfObjects))")
         } catch let error  {
             print("ERROR: \(error)")
         }
@@ -52,6 +51,8 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
             case .Success(let data):
                 self.clearData()
                 self.saveInCoreDataWith(array: data)
+                self.spinner.stopAnimating()
+                self.spinner.isHidden = true
             case .Error(let message):
                 DispatchQueue.main.async {
                     self.showAlertWith(title: "Error", message: message)
@@ -60,8 +61,7 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         }
     }
 
-
-
+    
     func showAlertWith(title: String, message: String, style: UIAlertControllerStyle = .alert) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: style)
         let action = UIAlertAction(title: title, style: .default) { (action) in
@@ -70,6 +70,7 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         alertController.addAction(action)
         self.present(alertController, animated: true, completion: nil)
     }
+    
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -93,7 +94,17 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     }
     
      func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return view.frame.width - 50 //100 = sum of labels height + height of divider line
+        return 220
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+        let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        let bookVC = mainStoryboard.instantiateViewController(withIdentifier: "bookVC") as! BookVC
+        let books = fetchedhResultController.object(at: indexPath) as? Books
+            bookVC.setBooks(books: (books)!)
+        self.navigationController?.pushViewController(bookVC, animated: true)
+   
     }
     
     private func createBookEntityFrom(dictionary: [String: AnyObject]) -> NSManagedObject? {
@@ -125,7 +136,6 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     
     private func clearData() {
         do {
-            
             let context = CoreDataStack.sharedInstance.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Books.self))
             do {
@@ -137,16 +147,40 @@ class BookDetailVC: UIViewController, UITableViewDelegate, UITableViewDataSource
             }
         }
     }
+
+    func attemptFetched() {
+        let fetchRequest: NSFetchRequest<Books> = Books.fetchRequest()
+        let rankSort = NSSortDescriptor(key: "rank", ascending: true)
+        let weekOnListSort = NSSortDescriptor(key: "week_on_list", ascending: false)
+       
+        
+        if segment.selectedSegmentIndex == 0 {
+            fetchRequest.sortDescriptors = [rankSort]
+        } else if segment.selectedSegmentIndex == 1 {
+           fetchRequest.sortDescriptors = [weekOnListSort]
+        }
+        
+        let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: CoreDataStack.sharedInstance.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        
+        controller.delegate = self
+        
+        self.fetchedhResultController = controller as! NSFetchedResultsController<NSFetchRequestResult>
+        
+        do {
+            try fetchedhResultController.performFetch()
+        } catch {
+            let error = error as NSError
+            print("\(error)")
+        }
+    }
     
-    
-   
-    
-    @IBAction func bookSortSegmentChange(_ sender: Any) {
+    @IBAction func bookSortSegmentChange(_ sender: AnyObject) {
+        attemptFetched()
+        tableView.reloadData()
     }
 }
 
 extension BookDetailVC: NSFetchedResultsControllerDelegate {
-    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {

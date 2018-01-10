@@ -7,10 +7,14 @@
 //
 
 import Foundation
+
 class BestSellerListName{
+    
     static var instance = BestSellerListName()
     var bestSellerListName: String!
     var URL: String!
+    var image: String?
+    
     private init () {}
     
 }

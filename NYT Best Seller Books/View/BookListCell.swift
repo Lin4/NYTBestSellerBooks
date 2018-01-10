@@ -14,11 +14,9 @@ class BookListCell: UITableViewCell {
     @IBOutlet weak var bestSellerListLbl: UILabel!
     
     func setBookListCellWith(bookList: BookList) {
-        
         DispatchQueue.main.async {
             self.bestSellerListLbl.text = bookList.list_name
             self.bookListImage.image = UIImage(named: (bookList.display_name?.removingWhitespaces())!)
-
         }
     }
 }

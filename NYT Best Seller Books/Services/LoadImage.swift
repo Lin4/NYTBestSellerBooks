@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 let imageCache = NSCache<NSString, UIImage>()
 extension UIImageView {
@@ -38,7 +39,5 @@ extension UIImageView {
             }).resume()
         }
     }
-    
 }
-
 

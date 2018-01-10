@@ -12,15 +12,16 @@ class BookCells: UITableViewCell {
     @IBOutlet weak var bookImage: UIImageView!
     @IBOutlet weak var weekOnListLbl: UILabel!
     @IBOutlet weak var rankLbl: UILabel!
-    
+
     func setBooksCellWith(books: Books) {
         DispatchQueue.main.async {
             self.weekOnListLbl.text = String(books.week_on_list)
             self.rankLbl.text = String(books.rank)
+          //  print("LIN IMAGE SUCKS", books.toImage)
             if let url = books.image_url {
                 self.bookImage.loadImageUsingCacheWithURLString(url, placeHolder: UIImage(named: "placeholder"))
             }
         }
+
     }
 }
-

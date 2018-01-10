@@ -11,28 +11,29 @@ import CoreData
 
 class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    
     lazy var fetchedhResultController: NSFetchedResultsController<NSFetchRequestResult> = {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: BookList.self))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "list_name", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "list_name", ascending: false)]
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: CoreDataStack.sharedInstance.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         frc.delegate = self
         return frc
     }()
     
+    @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
-        view.backgroundColor = .white
+        spinner.startAnimating()
         updateTableContent()
         }
     
     func updateTableContent() {
         do {
             try self.fetchedhResultController.performFetch()
-         //   print("COUNT FETCHED FIRST: \(self.fetchedhResultController.sections?[0].numberOfObjects)")
+            print("COUNT FETCHED FIRST: \(String(describing: self.fetchedhResultController.sections?[0].numberOfObjects))")
         } catch let error  {
             print("ERROR: \(error)")
         }
@@ -42,6 +43,8 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             case .Success(let data):
                 self.clearData()
                 self.saveInCoreDataWith(array: data)
+                self.spinner.stopAnimating()
+                self.spinner.isHidden = true
             case .Error(let message):
                 DispatchQueue.main.async {
                     self.showAlertWith(title: "Error", message: message)
@@ -71,7 +74,6 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "BookListCell", for: indexPath) as! BookListCell
         
         if let bookList = fetchedhResultController.object(at: indexPath) as? BookList {
@@ -101,8 +103,8 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     }
     
     private func clearData() {
+        
         do {
-            
             let context = CoreDataStack.sharedInstance.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: BookList.self))
             do {
@@ -115,11 +117,14 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         }
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 150
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let category = fetchedhResultController.object(at: indexPath) as? BookList {
             BestSellerListName.instance.bestSellerListName = category.list_name
         }
-        
         performSegue(withIdentifier: "toBookVC", sender: nil)
     }
     
@@ -132,9 +137,7 @@ class BestSellerListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
 }
 
 extension BestSellerListVC: NSFetchedResultsControllerDelegate {
-    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        
         switch type {
         case .insert:
             self.tableView.insertRows(at: [newIndexPath!], with: .automatic)

@@ -13,14 +13,20 @@
         <attribute name="rank" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="review_link" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="week_on_list" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="toImage" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Images" inverseName="toBooks" inverseEntity="Images" syncable="YES"/>
+    </entity>
+    <entity name="Images" representedClassName=".Images" syncable="YES">
+        <attribute name="image" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <relationship name="toBooks" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Books" inverseName="toImage" inverseEntity="Books" syncable="YES"/>
     </entity>
     <entity name="LastSaleBy" representedClassName=".LastSaleBy" syncable="YES">
         <attribute name="book_title" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="sell_by" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="BookList" positionX="-63" positionY="-18" width="128" height="75"/>
-        <element name="Books" positionX="-54" positionY="-9" width="128" height="165"/>
+        <element name="BookList" positionX="-198" positionY="-207" width="128" height="75"/>
+        <element name="Books" positionX="-576" positionY="-90" width="128" height="178"/>
         <element name="LastSaleBy" positionX="-36" positionY="54" width="128" height="75"/>
+        <element name="Images" positionX="-315" positionY="-90" width="128" height="73"/>
     </elements>
 </model>
